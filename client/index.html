@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <!-- viewport-fit=cover lets content use the notch area (safe-area insets in CSS).
+         Pinch-zoom stays enabled for accessibility. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+
+    <!-- Browser chrome colour on mobile -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fbf8f2" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#24170f" />
+
+    <!-- Primary meta -->
+    <title>Mehndi Studio — Art on Your Hands</title>
+    <meta
+      name="description"
+      content="Discover beautiful Mehndi designs by style, occasion and price. Book appointments, pay via UPI, and manage your orders — all in one place."
+    />
+    <meta name="author" content="Mehndi Studio" />
+    <meta name="application-name" content="Mehndi Studio" />
+
+    <!-- iOS / standalone mode -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Mehndi Studio" />
+
+    <!-- One tag only: browsers ignore repeated format-detection tags -->
+    <meta
+      name="format-detection"
+      content="telephone=no, date=no, address=no, email=no"
+    />
+
+    <!-- Open Graph / Twitter (text-only until you have a real domain + image).
+         When ready, add:
+           <meta property="og:url" content="https://YOUR-DOMAIN/" />
+           <meta property="og:image" content="https://YOUR-DOMAIN/og-image.jpg" />
+           <meta name="twitter:image" content="https://YOUR-DOMAIN/og-image.jpg" />
+         and change twitter:card to summary_large_image. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mehndi Studio" />
+    <meta property="og:title" content="Mehndi Studio — Art on Your Hands" />
+    <meta
+      property="og:description"
+      content="Explore expressive Mehndi designs across seven distinctive styles. Book appointments and pay securely via UPI."
+    />
+    <meta property="og:locale" content="en_GB" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Mehndi Studio — Art on Your Hands" />
+    <meta
+      name="twitter:description"
+      content="Explore expressive Mehndi designs across seven distinctive styles."
+    />
+
+    <!-- Favicon: inline SVG, so no file in /public is needed
+         (missing files were being answered with index.html). -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%2324170f'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='34' font-weight='700' text-anchor='middle' fill='%23f1cf8a'%3EM%3C/text%3E%3C/svg%3E"
+    />
+
+    <!-- PWA manifest: intentionally left out until /public/manifest.webmanifest
+         and its icons exist. Then add:
+         <link rel="manifest" href="/manifest.webmanifest" /> -->
+
+    <!-- Google Fonts connections (remove these two lines if your CSS doesn't use Google Fonts) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Optional: warm up the connection to your backend (set your real API URL) -->
+    <!-- <link rel="preconnect" href="https://YOUR-API-HOST" crossorigin /> -->
+
+    <!-- Tiny critical CSS to avoid a white flash before Tailwind loads -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #fbf8f2;
+        color: #2a1a12;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        html {
+          scroll-behavior: smooth;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>
+      <div
+        style="
+          min-height: 100vh;
+          display: grid;
+          place-items: center;
+          padding: 2rem;
+          text-align: center;
+          font-family: Inter, system-ui, sans-serif;
+          background: #fbf8f2;
+          color: #2a1a12;
+        "
+      >
+        <div style="max-width: 32rem">
+          <h1
+            style="
+              font-family: Georgia, 'Times New Roman', serif;
+              font-size: 1.75rem;
+              margin: 0 0 0.75rem;
+            "
+          >
+            Mehndi Studio
+          </h1>
+          <p style="margin: 0; line-height: 1.6; color: #715e4e">
+            This app requires JavaScript to display the design catalog and
+            manage bookings. Please enable JavaScript and reload the page.
+          </p>
+        </div>
+      </div>
+    </noscript>
+
+    <div id="root"></div>
+
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
