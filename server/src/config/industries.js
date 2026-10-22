@@ -7,181 +7,9 @@
    To add a new industry: copy a profile below, change the words and categories.
    ===================================================================== */
 
-const cat = (id, name, shortName, description, accent) => ({ id, name, shortName, description, accent });
-
-export const INDUSTRIES = {
-    /* ------------------------------------------------------------ Mehndi (original) */
-    mehndi: {
-        name: "Mehndi Studio",
-        tagline: "Art on your hands",
-        item: "design", items: "designs", custom: "custom design",
-        customRequest: "custom design request",
-        defaultDescription: "A beautifully composed Mehndi design.",
-        amountTypes: ["per design", "per hand", "per pair", "per hour", "package"],
-        sessionStart: "Start Mehndi session",
-        catalogKicker: "The collection", catalogTitle: "Find your signature style.", browseLabel: "Browse styles", allLabel: "All styles", exploreLabel: "Explore collection",
-        startedTitle: "Your Mehndi session started ✨",
-        sessionWorking: "Studio is working on your design",
-        readyTitle: "Your Mehndi is ready! 🎨",
-        readyGroup: "Your group session is complete! 🎨",
-        reviewPrompt: "How was your Mehndi?",
-        reviewHint: "The design, the finish, the service…",
-        heroKicker: "Curated Mehndi Collection",
-        heroTitle1: "Where tradition",
-        heroTitle2: "becomes art.",
-        heroText: "Explore expressive Mehndi designs across seven distinctive styles. Save your favourites, discover details and build your selection beautifully.",
-        heroBadge: "Designed for every occasion",
-        heroCardTitle: "signature styles",
-        heroArt: "Mehndi",
-        heroArtSub: "timeless craft",
-        storyKicker: "The idea",
-        storyTitle: "Every pattern has a personality.",
-        storyText: "From a quick Arabic trail to an elaborate bridal composition, Mehndi is more than decoration. This collection is designed to make discovering that expression simple, visual and personal.",
-        storyStat1: "Styles", storyStat2: "Possibilities", storyStat3: "Signature",
-        footerTagline: "A modern catalog for a timeless craft.",
-        customPlaceholder: "e.g. Bridal mehndi with peacock motifs on both hands, extending to elbows. Prefer front and back coverage.",
-        eventSubtitle: "Exclusive designs and special pricing for a limited time only.",
-        metaDescription: "Discover beautiful Mehndi designs by style, occasion and price. Book appointments, pay via UPI, and manage your orders - all in one place.",
-        categories: [
-            cat("arabic", "Arabic Mehndi", "Arabic", "Bold floral trails, statement motifs and elegant negative space.", "Warm & graceful"),
-            cat("indian", "Indian Mehndi", "Indian", "Intricate paisleys, peacocks, florals and detailed traditional storytelling.", "Intricate & rich"),
-            cat("pakistani", "Pakistani Mehndi", "Pakistani", "Mandalas, domes, architectural details and beautifully detailed fingers.", "Detailed & regal"),
-            cat("moroccan", "Moroccan Mehndi", "Moroccan", "Geometric diamonds, grids, zig-zags and clean tribal-inspired lines.", "Geometric & bold"),
-            cat("indo-arabic", "Indo-Arabic Mehndi", "Indo-Arabic", "Arabic openness meets Indian detail for a balanced statement look.", "Balanced & expressive"),
-            cat("minimal-modern", "Minimal / Modern", "Modern", "Clean lines, small focal motifs and contemporary negative space.", "Clean & modern"),
-            cat("bridal", "Bridal Mehndi", "Bridal", "Full, luxurious compositions for weddings, celebrations and bridal moments.", "Grand & timeless"),
-        ],
-    },
-
-    /* ------------------------------------------------------------ Barber shop */
-    barber: {
-        name: "The Barber Shop",
-        tagline: "Sharp cuts. Clean fades.",
-        item: "service", items: "services", custom: "special request",
-        customRequest: "special request",
-        defaultDescription: "A professional service by our expert barbers.",
-        amountTypes: ["per service", "per session", "package"],
-        sessionStart: "Start service",
-        catalogKicker: "Our services", catalogTitle: "Find your perfect cut.", browseLabel: "Browse services", allLabel: "All services", exploreLabel: "Explore services",
-        startedTitle: "Your service has started ✂️",
-        sessionWorking: "Your barber is working on you",
-        readyTitle: "You're all done! ✂️",
-        readyGroup: "Your group is all done! ✂️",
-        reviewPrompt: "How was your visit?",
-        reviewHint: "The cut, the finish, the service…",
-        heroKicker: "Premium Grooming",
-        heroTitle1: "Look sharp.",
-        heroTitle2: "Feel unstoppable.",
-        heroText: "Browse our haircuts, beard styling and grooming packages. Pick your services, choose a time that suits you and walk in to a chair that's ready.",
-        heroBadge: "Walk in confident",
-        heroCardTitle: "grooming categories",
-        heroArt: "Barber",
-        heroArtSub: "precision craft",
-        storyKicker: "The idea",
-        storyTitle: "Every cut tells a story.",
-        storyText: "A great cut is about more than hair. We combine classic technique with modern style so you leave looking and feeling your best - booked in seconds, no waiting around.",
-        storyStat1: "Categories", storyStat2: "Styles", storyStat3: "Standard",
-        footerTagline: "Craft, precision and a clean finish.",
-        customPlaceholder: "e.g. Skin fade with a textured top, beard shaped to a sharp line. Please keep the sides short.",
-        eventSubtitle: "Special offers and pricing for a limited time only.",
-        metaDescription: "Book haircuts, beard trims and grooming packages online. Choose your service, pick a free time slot and pay securely.",
-        categories: [
-            cat("haircuts", "Haircuts", "Haircuts", "Classic cuts, fades, tapers and modern styles tailored to you.", "Sharp & clean"),
-            cat("beard-shave", "Beard & Shave", "Beard", "Beard shaping, hot-towel shaves and precise line-ups.", "Smooth & precise"),
-            cat("kids-cuts", "Kids' Cuts", "Kids", "Patient, friendly cuts for the younger gentlemen.", "Fun & friendly"),
-            cat("hair-colour", "Hair Colour", "Colour", "Colouring, highlights and grey blending.", "Bold & natural"),
-            cat("facials-skin", "Facials & Skin", "Skin", "Cleanups, facials and skin care for men.", "Fresh & glowing"),
-            cat("head-massage", "Head Massage", "Massage", "Relaxing head, neck and shoulder massage.", "Calm & relaxed"),
-            cat("grooming-packages", "Grooming Packages", "Packages", "Cut, beard and skin care bundled for the full treatment.", "Complete & value"),
-        ],
-    },
-
-    /* ------------------------------------------------------------ Hair & beauty salon */
-    salon: {
-        name: "Glow Salon",
-        tagline: "Beauty, beautifully done",
-        item: "service", items: "services", custom: "special request",
-        customRequest: "special request",
-        defaultDescription: "A professional service by our expert stylists.",
-        amountTypes: ["per service", "per session", "per hour", "package"],
-        sessionStart: "Start service",
-        catalogKicker: "Our services", catalogTitle: "Find your perfect treatment.", browseLabel: "Browse services", allLabel: "All services", exploreLabel: "Explore services",
-        startedTitle: "Your service has started ✨",
-        sessionWorking: "Your stylist is working on you",
-        readyTitle: "You look amazing! ✨",
-        readyGroup: "Your group is all done! ✨",
-        reviewPrompt: "How was your visit?",
-        reviewHint: "The service, the result, the stylist…",
-        heroKicker: "Hair & Beauty",
-        heroTitle1: "Your best look,",
-        heroTitle2: "beautifully done.",
-        heroText: "From hair styling and colour to skin, nails and bridal makeup - choose your services, pick a time and let our stylists take care of the rest.",
-        heroBadge: "For every occasion",
-        heroCardTitle: "beauty categories",
-        heroArt: "Glow",
-        heroArtSub: "hair & beauty",
-        storyKicker: "Our promise",
-        storyTitle: "Beauty with a personal touch.",
-        storyText: "Every guest is different. Our team listens first, then creates a look that suits you - for everyday confidence or your biggest day.",
-        storyStat1: "Categories", storyStat2: "Looks", storyStat3: "Promise",
-        footerTagline: "Hair, skin and beauty - all in one place.",
-        customPlaceholder: "e.g. Balayage with soft caramel tones, shoulder-length layers. Prefer low-maintenance styling.",
-        eventSubtitle: "Seasonal offers and special pricing for a limited time only.",
-        metaDescription: "Book hair, skin, nail and makeup services online. Choose your service, pick a free time slot and pay securely.",
-        categories: [
-            cat("hair-styling", "Hair Cut & Styling", "Hair", "Cuts, blow-dries and styling for every length.", "Chic & fresh"),
-            cat("colour", "Colour & Highlights", "Colour", "Global colour, balayage, highlights and toning.", "Vibrant & rich"),
-            cat("hair-treatments", "Hair Treatments", "Treatments", "Keratin, smoothing, spa and repair treatments.", "Smooth & healthy"),
-            cat("facials", "Facials & Skin", "Skin", "Facials, cleanups and glow treatments.", "Radiant & fresh"),
-            cat("nails", "Nails", "Nails", "Manicure, pedicure, gel and nail art.", "Polished & neat"),
-            cat("waxing", "Waxing & Threading", "Waxing", "Quick, gentle hair removal.", "Smooth & quick"),
-            cat("makeup-bridal", "Makeup & Bridal", "Makeup", "Party makeup, bridal makeup and styling.", "Glamorous & timeless"),
-        ],
-    },
-
-    /* ------------------------------------------------------------ Car wash / detailing */
-    carwash: {
-        name: "Sparkle Car Wash",
-        tagline: "Shine you can see",
-        item: "service", items: "services", custom: "special request",
-        customRequest: "special request",
-        defaultDescription: "A careful, professional service for your vehicle.",
-        amountTypes: ["per vehicle", "per car", "per bike", "package"],
-        sessionStart: "Start wash",
-        catalogKicker: "Our packages", catalogTitle: "Find the right care for your car.", browseLabel: "Browse services", allLabel: "All services", exploreLabel: "Explore services",
-        startedTitle: "We've started on your vehicle 🚗",
-        sessionWorking: "We're working on your vehicle",
-        readyTitle: "Your vehicle is ready! 🚗",
-        readyGroup: "All your vehicles are ready! 🚗",
-        reviewPrompt: "How was your wash?",
-        reviewHint: "The cleaning, the finish, the service…",
-        heroKicker: "Car Care & Detailing",
-        heroTitle1: "Drive in dirty.",
-        heroTitle2: "Drive out sparkling.",
-        heroText: "Exterior washes, interior cleaning, full detailing and paint protection. Choose a package, book a free bay and we'll have your car looking new.",
-        heroBadge: "Quick, careful, spotless",
-        heroCardTitle: "care categories",
-        heroArt: "Sparkle",
-        heroArtSub: "car care",
-        storyKicker: "Why us",
-        storyTitle: "Care for every vehicle.",
-        storyText: "Whether it's a quick rinse or a full detail, we treat every vehicle like our own - with the right products, the right process and no rushing.",
-        storyStat1: "Categories", storyStat2: "Packages", storyStat3: "Standard",
-        footerTagline: "Spotless results, every time.",
-        customPlaceholder: "e.g. SUV with pet hair on the back seats and a stain on the driver's seat. Please focus on the interior.",
-        eventSubtitle: "Seasonal offers and special pricing for a limited time only.",
-        metaDescription: "Book car washes, interior cleaning and detailing online. Choose your package, pick a free bay time and pay securely.",
-        categories: [
-            cat("exterior-wash", "Exterior Wash", "Exterior", "Hand wash, foam wash and drying.", "Fast & fresh"),
-            cat("interior-cleaning", "Interior Cleaning", "Interior", "Vacuum, dashboard, seats and glass cleaning.", "Clean & fresh"),
-            cat("full-detailing", "Full Detailing", "Detailing", "Deep clean inside and out.", "Showroom finish"),
-            cat("polish-wax", "Polish & Wax", "Polish", "Machine polish and protective wax.", "Glossy & smooth"),
-            cat("paint-protection", "Paint Protection", "Protection", "Ceramic coating and long-lasting paint protection.", "Durable & deep"),
-            cat("engine-underbody", "Engine & Underbody", "Engine", "Engine bay and underbody cleaning.", "Thorough & safe"),
-            cat("add-ons", "Add-ons", "Add-ons", "Odour removal, headlight restoration and extras.", "Extra care"),
-        ],
-    },
-};
+import { AsyncLocalStorage } from "node:async_hooks";
+import { INDUSTRIES } from "../industries/index.js";
+export { INDUSTRIES };
 
 export const cap = (t) => (t ? t[0].toUpperCase() + t.slice(1) : t);
 
@@ -275,24 +103,36 @@ export function buildProfile(key, base, overrides = {}) {
     return p;
 }
 
-/* The profile in use. The server fills it from the database at start-up and whenever the
-   SuperAdmin changes it; until then it falls back to INDUSTRY in .env. */
-let active = null;
-export const setActiveProfile = (p) => { active = p; };
+/* =====================================================================
+   WHICH BUSINESS IS THIS REQUEST FOR?
+   Many businesses run at once, each on its own address (/mehndi, /barber ...).
+   The server middleware puts the business of the current request in an AsyncLocalStorage, so
+   getProfile() anywhere in the code returns THAT business's wording without passing it around.
+   Outside a request (timers, startup) it falls back to the default business.
+   ===================================================================== */
+export const industryContext = new AsyncLocalStorage();
+
+let profiles = new Map();     // industryKey -> profile (built-in + custom, with SuperAdmin wording)
+let defaultKey = null;
+
+export function setProfiles(map, defKey) { profiles = map; defaultKey = defKey; }
 
 export function getIndustryKey() {
     const key = String(process.env.INDUSTRY || "mehndi").trim().toLowerCase();
     return INDUSTRIES[key] ? key : "mehndi";
 }
 
-export function getProfile() {
-    if (active) return active;
-    const key = getIndustryKey();
-    const p = INDUSTRIES[key];
+function envProfile(key) {
+    const p = INDUSTRIES[key] || INDUSTRIES.mehndi;
     return {
-        industry: key,
-        ...p,
+        industry: INDUSTRIES[key] ? key : "mehndi", ...p,
         name: (process.env.BRAND_NAME || "").trim() || p.name,
         tagline: (process.env.BRAND_TAGLINE || "").trim() || p.tagline,
     };
 }
+
+export function getProfile(key) {
+    const k = key || industryContext.getStore()?.industryKey || defaultKey || getIndustryKey();
+    return profiles.get(k) || envProfile(k);
+}
+export const getDefaultIndustryKey = () => defaultKey || getIndustryKey();

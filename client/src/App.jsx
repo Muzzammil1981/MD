@@ -24,13 +24,14 @@ import Catalog from "./components/Catalog";
 import ReviewsSection from "./components/ReviewsSection";
 import DesignReviews from "./components/DesignReviews";
 import { B } from "./lib/brand";
+import { routeInfo } from "./lib/route";
 
 const API = API_BASE;
 
 
 function App() {
-  const isAdminRoute = window.location.pathname.startsWith("/admin");
-  const isMonitorRoute = window.location.pathname.startsWith("/monitor");
+  const isAdminRoute = routeInfo.kind === "admin";
+  const isMonitorRoute = routeInfo.kind === "monitor";
   const [adminUser, setAdminUser] = useState(null);
   const [checking, setChecking] = useState(true);
 
@@ -138,7 +139,7 @@ function PublicCatalog({ activeEvent }) {
   useEffect(() => {
     if (!user) { setCart([]); setSelectedItems(new Set()); return; }
     try {
-      const saved = JSON.parse(localStorage.getItem(`mehndi-cart-${user.id}`) || "[]");
+      const saved = JSON.parse(localStorage.getItem(`mehndi-cart-${routeInfo.slug || "default"}-${user.id}`) || "[]");
       setCart(Array.isArray(saved) ? saved : []);
       setSelectedItems(new Set());
     } catch { setCart([]); setSelectedItems(new Set()); }
@@ -146,13 +147,13 @@ function PublicCatalog({ activeEvent }) {
 
   useEffect(() => {
     if (!user) return;
-    localStorage.setItem(`mehndi-cart-${user.id}`, JSON.stringify(cart));
+    localStorage.setItem(`mehndi-cart-${routeInfo.slug || "default"}-${user.id}`, JSON.stringify(cart));
   }, [cart, user?.id]);
 
   useEffect(() => {
     if (!user) return;
     const token = localStorage.getItem("mehndi-user-token");
-    const socket = io(API, { auth: { token } });
+    const socket = io(API, { auth: { token, slug: routeInfo.slug } });
     socket.on("notification", (n) => {
       playNotificationSound(n.status === "approved" ? "success" : n.status === "rejected" ? "error" : "info");
       if (n.type === "order-update") window.dispatchEvent(new CustomEvent("mehndi:order-update", { detail: n }));

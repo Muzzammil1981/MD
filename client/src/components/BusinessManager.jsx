@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
     Briefcase, Plus, Trash2, Pencil, Check, X, ArrowUp, ArrowDown, Loader2, AlertCircle,
-    CheckCircle2, RefreshCw, RotateCcw, ChevronDown, Wand2, Tag, Sparkles, Copy, Eye, FileText,
+    CheckCircle2, RefreshCw, RotateCcw, ChevronDown, Wand2, Tag, Sparkles, Copy, Eye, FileText, Globe, ExternalLink,
 } from "lucide-react";
 import { api } from "../lib/api";
 import { B } from "../lib/brand";
@@ -57,6 +57,7 @@ export default function BusinessManager() {
             )}
 
             <IndustryPanel data={industries} reload={loadIndustries} flash={flash} editKey={editKey} setEditKey={setEditKey} setNeedsReload={setNeedsReload} />
+            {editKey && <AddressPanel key={`addr-${editKey}`} biz={industries.industries.find((i) => i.key === editKey)} reload={loadIndustries} flash={flash} />}
             {editKey && <WordingPanel key={editKey} industryKey={editKey} data={industries} flash={flash} setNeedsReload={setNeedsReload} onCategoriesChanged={() => setCatVersion((v) => v + 1)} />}
             {editKey && (
                 <CategoriesPanel
@@ -106,7 +107,7 @@ function IndustryPanel({ data, reload, flash, editKey, setEditKey, setNeedsReloa
                 <div className="flex items-center gap-2"><Briefcase size={18} className="text-[#7d3f24]" /><h3 className="serif text-xl font-semibold">Business type</h3></div>
                 <button onClick={() => setAdding(!adding)} className={btnLight}>{adding ? <X size={14} /> : <Plus size={14} />} {adding ? "Cancel" : "Add industry"}</button>
             </div>
-            <p className="mt-1 text-xs text-[#715e4e]">Click an industry to edit its wording and categories below. <strong>Use</strong> makes it the one your customers see.</p>
+            <p className="mt-1 text-xs text-[#715e4e]">Every business has its own address, wording, categories, orders and admins. Click one to edit it below. <strong>Make default</strong> only chooses what old links without an address show.</p>
 
             {adding && (
                 <form onSubmit={create} className="mt-4 grid gap-3 rounded-xl bg-[#faf5ed] p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
@@ -132,14 +133,14 @@ function IndustryPanel({ data, reload, flash, editKey, setEditKey, setNeedsReloa
                             <div className="min-w-0">
                                 <div className="truncate text-sm font-semibold">{i.name}</div>
                                 <div className="text-[11px] text-[#8a6d53]">
-                                    {i.builtIn ? "Built-in" : `Custom · from ${i.baseKey}`}
+                                    {i.builtIn ? "Built-in" : `Custom · from ${i.baseKey}`} · /{i.slug}{!i.published && <span className="ml-1 rounded bg-[#f3e0dc] px-1.5 py-0.5 text-[9px] font-bold text-[#9b3b2b]">Hidden</span>}
                                     {isEditing && <span className="ml-2 font-bold text-[#7d3f24]">· Editing below</span>}
                                 </div>
                             </div>
                             <div className="flex shrink-0 items-center gap-1.5">
                                 {isActive
-                                    ? <span className="rounded-full bg-[#d6efdc] px-2.5 py-1 text-[10px] font-bold text-[#1d7a3e]">Active</span>
-                                    : <button disabled={busy} onClick={stop(() => activate(i.key))} className={btnLight}>Use</button>}
+                                    ? <span className="rounded-full bg-[#d6efdc] px-2.5 py-1 text-[10px] font-bold text-[#1d7a3e]">Default</span>
+                                    : <button disabled={busy} onClick={stop(() => activate(i.key))} className={btnLight}>Make default</button>}
                                 {!i.builtIn && !isActive && <button onClick={stop(() => remove(i))} className="rounded-full border border-[#e6c4be] p-2 text-[#9b3b2b] hover:bg-[#f7e9e6]" title="Delete"><Trash2 size={12} /></button>}
                             </div>
                         </div>
@@ -231,7 +232,7 @@ function WordingPanel({ industryKey, data, flash, setNeedsReload, onCategoriesCh
                 <div className="flex items-center gap-2">
                     <Wand2 size={18} className="text-[#7d3f24]" />
                     <h3 className="serif text-xl font-semibold">Wording: {state.name}</h3>
-                    {isActive && <span className="rounded-full bg-[#d6efdc] px-2.5 py-1 text-[10px] font-bold text-[#1d7a3e]">Active</span>}
+                    {isActive && <span className="rounded-full bg-[#d6efdc] px-2.5 py-1 text-[10px] font-bold text-[#1d7a3e]">Default</span>}
                 </div>
                 <div className="flex gap-2">
                     <div className="flex rounded-full border border-[#ded0bc] p-0.5 lg:hidden">
@@ -391,7 +392,7 @@ function CategoriesPanel({ flash, industryKey, industryName, isActive }) {
     return (
         <section className={card}>
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2"><Tag size={18} className="text-[#7d3f24]" /><h3 className="serif text-xl font-semibold">Categories: {industryName}</h3>{isActive && <span className="rounded-full bg-[#d6efdc] px-2.5 py-1 text-[10px] font-bold text-[#1d7a3e]">Active</span>}</div>
+                <div className="flex items-center gap-2"><Tag size={18} className="text-[#7d3f24]" /><h3 className="serif text-xl font-semibold">Categories: {industryName}</h3>{isActive && <span className="rounded-full bg-[#d6efdc] px-2.5 py-1 text-[10px] font-bold text-[#1d7a3e]">Default</span>}</div>
                 <div className="flex flex-wrap gap-2">
                     <button onClick={starter} disabled={busy} className={btnLight}><Wand2 size={13} /> Add starter categories</button>
                     <button onClick={() => setEditing({ id: null, name: "", shortName: "", description: "", accent: "" })} className={btnDark}><Plus size={14} /> New category</button>
@@ -471,5 +472,65 @@ function Modal({ children, onClose }) {
         <div className="fixed inset-0 z-[80] grid place-items-center bg-[#20140e]/70 p-4 backdrop-blur-sm" onMouseDown={onClose}>
             <div onMouseDown={(e) => e.stopPropagation()} className="max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">{children}</div>
         </div>
+    );
+}
+
+/* ------------------------------------------------------------------ public address */
+function AddressPanel({ biz, reload, flash }) {
+    const [slug, setSlug] = useState(biz?.slug || "");
+    const [published, setPublished] = useState(Boolean(biz?.published));
+    const [qr, setQr] = useState(null);
+    const [busy, setBusy] = useState(false);
+    const [copied, setCopied] = useState(false);
+    if (!biz) return null;
+
+    const origin = window.location.origin;
+    const url = `${origin}/${slug}`;
+    const dirty = slug !== biz.slug || published !== Boolean(biz.published);
+
+    const save = async () => {
+        setBusy(true);
+        try {
+            await api.put(`/api/business/industries/${biz.key}/address`, { slug, published });
+            await reload(); setQr(null);
+            flash("ok", published ? "Saved - this business is open for customers" : "Saved - this business is hidden from customers");
+        } catch (e) { flash("err", msgOf(e, "Could not save the address")); }
+        finally { setBusy(false); }
+    };
+    const copy = async () => {
+        try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* ignore */ }
+    };
+    const showQr = async () => {
+        try { const { data } = await api.get(`/api/business/industries/${biz.key}/qr`); setQr(data.qr); }
+        catch (e) { flash("err", msgOf(e, "Could not make the QR code")); }
+    };
+
+    return (
+        <section className={card}>
+            <div className="flex items-center gap-2"><Globe size={18} className="text-[#7d3f24]" /><h3 className="serif text-xl font-semibold">Public address: {biz.name}</h3></div>
+            <p className="mt-1 text-xs text-[#715e4e]">Customers open this business at its own link. A hidden business is only visible to staff (so you can set it up first).</p>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                <label className="grid gap-1 text-xs font-semibold text-[#5b4636]">Address
+                    <div className="flex items-center rounded-xl border border-[#ddcdb8] bg-white focus-within:ring-2 focus-within:ring-[#b07a4f]">
+                        <span className="pl-3 text-sm text-[#a38974]">{origin}/</span>
+                        <input className="w-full bg-transparent p-3 text-sm outline-none" value={slug} spellCheck={false}
+                            onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="hair-beauty" />
+                    </div>
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#eadfce] bg-[#faf5ed] px-4 py-3 text-sm font-semibold">
+                    <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} className="h-4 w-4 accent-[#1d7a3e]" />
+                    Open for customers
+                </label>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+                <button onClick={save} disabled={busy || !dirty} className={btnDark}>{busy && <Loader2 size={14} className="animate-spin" />} Save address</button>
+                <button onClick={copy} className={btnLight}><Copy size={13} /> {copied ? "Copied ✓" : "Copy link"}</button>
+                <a href={`/${biz.slug}`} target="_blank" rel="noopener noreferrer" className={btnLight}><ExternalLink size={13} /> Open</a>
+                <button onClick={showQr} className={btnLight}>QR code</button>
+            </div>
+            {qr && <div className="mt-4 inline-block rounded-2xl border border-[#eadfce] bg-white p-3 text-center"><img src={qr} alt="QR code" className="h-44 w-44" /><div className="mt-1 break-all text-[10px] text-[#8a6d53]">{origin}/{biz.slug}</div></div>}
+        </section>
     );
 }

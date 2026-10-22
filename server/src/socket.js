@@ -34,7 +34,11 @@ export function initSocket(httpServer) {
             // + one room per industry the SuperAdmin assigned: normal bookings of those industries alert this admin
             getAdminIndustries(userId).then((keys) => socket.join(keys.map((k) => `industry:${k}`))).catch(() => { });
         }
-        else socket.join("users");
+        else {
+            socket.join("users");
+            const slug = String(socket.handshake.auth?.slug || "").toLowerCase();
+            if (slug) socket.join(`biz:${slug}`);   // alerts of the business the customer is browsing
+        }
         if (userId) socket.join(`user:${userId}`);
 
         socket.on("disconnect", () => console.log(`❌ ${socket.id} left`));
@@ -45,9 +49,9 @@ export function initSocket(httpServer) {
 
 export function getIO() { return io; }
 
-/** Admin → all Users */
-export function notifyUsers(payload) {
-    io?.to("users").emit("notification", payload);
+/** Admin → the customers of ONE business (slug), or every customer when no business is given */
+export function notifyUsers(payload, slug) {
+    io?.to(slug ? `biz:${slug}` : "users").emit("notification", payload);
 }
 
 /** A customer action → the right admins:

@@ -2,6 +2,8 @@ import express from "express";
 import { adminOnly } from "../middleware/auth.js";
 import { getProfile } from "../config/industries.js";
 import { canAccessIndustry } from "../services/adminAccess.js";
+import { slugOf } from "../services/businessService.js";
+import { currentIndustry } from "../middleware/industry.js";
 import {
     listEvents, getEvent, canAccessEvent, createEvent, updateEvent, deleteEvent, buildEventQueue,
 } from "../services/eventService.js";
@@ -53,8 +55,13 @@ router.get("/:id", async (req, res) => {
     try {
         const event = await getEvent(req.params.id);
         if (!event) return res.status(404).json({ message: "Event not found" });
+        // an event belongs to ONE business: /barber can't open a Mehndi event
+        const ctx = currentIndustry();
+        if (ctx.explicit && event.industryKey && event.industryKey !== ctx.industryKey) {
+            return res.status(404).json({ message: "Event not found" });
+        }
         const { ownerId, ownerName, ...publicEvent } = event;   // customers don't need to see the owner
-        res.json({ active: true, event: publicEvent, currentToken: event.tokenCounter || 0 });
+        res.json({ active: true, event: publicEvent, currentToken: event.tokenCounter || 0, businessSlug: slugOf(event.industryKey) });
     } catch (err) { fail(res, err, "Failed to load event"); }
 });
 

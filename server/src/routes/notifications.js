@@ -1,6 +1,7 @@
 import express from "express";
 import { adminOnly } from "../middleware/auth.js";
 import { notifyUsers } from "../socket.js";
+import { currentIndustry } from "../middleware/industry.js";
 import { getProfile, cap } from "../config/industries.js";
 
 const router = express.Router();
@@ -14,7 +15,7 @@ router.post("/broadcast", ...adminOnly, (req, res) => {
         designId,
         at: new Date().toISOString(),
     };
-    notifyUsers(payload);
+    notifyUsers(payload, currentIndustry().slug);
     res.json({ ok: true, payload });
 });
 

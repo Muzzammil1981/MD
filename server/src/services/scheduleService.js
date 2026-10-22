@@ -1,4 +1,5 @@
 import { query } from "../db/pool.js";
+import { getProfile } from "../config/industries.js";
 
 /* =========================================================
    Slot booking for NORMAL bookings (events are first-come tokens and skip this).
@@ -35,8 +36,11 @@ function rowToSettings(r) {
     };
 }
 
+/* opening hours of THIS business (falls back to the old single schedule if it has none yet) */
 export async function getScheduleSettings(db = null) {
-    const rows = await query(`SELECT * FROM mehndi.ScheduleSettings WHERE Id = 1`, {}, db);
+    const k = getProfile().industry;
+    let rows = await query(`SELECT * FROM mehndi.IndustrySchedule WHERE IndustryKey = @k`, { k }, db);
+    if (!rows[0]) rows = await query(`SELECT * FROM mehndi.ScheduleSettings WHERE Id = 1`, {}, db);
     return rowToSettings(rows[0]);
 }
 
@@ -55,10 +59,13 @@ export async function saveScheduleSettings(input) {
     const closed = [...new Set((input.closedDays || []).map(Number))].filter((d) => d >= 0 && d <= 6).sort();
 
     await query(
-        `UPDATE mehndi.ScheduleSettings
+        `UPDATE mehndi.IndustrySchedule
             SET OpenTime=@o, CloseTime=@c, SlotMinutes=@s, Stations=@st, ClosedDays=@cd, AdvanceDays=@a, UpdatedAt=SYSUTCDATETIME()
-          WHERE Id = 1`,
-        { o: openTime, c: closeTime, s: slotMinutes, st: stations, cd: closed.join(","), a: advanceDays });
+          WHERE IndustryKey = @k;
+         IF @@ROWCOUNT = 0
+             INSERT INTO mehndi.IndustrySchedule (IndustryKey, OpenTime, CloseTime, SlotMinutes, Stations, ClosedDays, AdvanceDays)
+             VALUES (@k, @o, @c, @s, @st, @cd, @a);`,
+        { k: getProfile().industry, o: openTime, c: closeTime, s: slotMinutes, st: stations, cd: closed.join(","), a: advanceDays });
     return getScheduleSettings();
 }
 
@@ -94,9 +101,9 @@ export async function loadDurations(ids) {
 async function dayBookings(dateStr, excludeOrderId, db) {
     return query(
         `SELECT SlotStartMin, SlotMinutes, SlotStations FROM mehndi.Orders
-          WHERE SlotDate = @d AND EventId IS NULL AND Status <> 'rejected'
+          WHERE SlotDate = @d AND EventId IS NULL AND Status <> 'rejected' AND IndustryKey = @ind
             AND SlotMinutes IS NOT NULL ${excludeOrderId ? "AND Id <> @ex" : ""}`,
-        excludeOrderId ? { d: dateStr, ex: excludeOrderId } : { d: dateStr }, db);
+        excludeOrderId ? { d: dateStr, ind: getProfile().industry, ex: excludeOrderId } : { d: dateStr, ind: getProfile().industry }, db);
 }
 
 /* Free stations = total - the PEAK number in use at any instant inside [start, start+minutes).
@@ -164,7 +171,7 @@ export async function reserveSlot({ date, time, minutes, stations, excludeOrderI
         `DECLARE @r INT;
          EXEC @r = sp_getapplock @Resource = @res, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000;
          SELECT @r AS R;`,
-        { res: `mehndi-slot-${date}` }, tx);
+        { res: `mehndi-slot-${getProfile().industry}-${date}` }, tx);
     if ((lock[0]?.R ?? -1) < 0) throw new Error("The studio is busy right now. Please try again in a moment.");
 
     if (!/^\d{2}:\d{2}$/.test(String(time || ""))) throw new Error("Please choose a time slot");

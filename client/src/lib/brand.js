@@ -70,13 +70,17 @@ function applyToPage() {
     set('meta[name="twitter:description"]', "content", B.metaDescription);
 }
 
+/** returns "ok" | "notfound" (no such / unpublished business) | "offline" */
 export async function loadBrand() {
+    let status = "ok";
     try {
         const { data } = await api.get("/api/config", { timeout: 4000 });
         Object.assign(B, data);
     } catch (err) {
-        console.warn("Could not load /api/config - using default labels.", err.message);
+        status = err.response?.status === 404 ? "notfound" : "offline";
+        console.warn("Could not load /api/config.", err.message);
     }
     derive();
-    applyToPage();
+    if (status === "ok") applyToPage();
+    return status;
 }

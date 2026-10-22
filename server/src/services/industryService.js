@@ -1,7 +1,8 @@
 import { query } from "../db/pool.js";
 import { invalidateCategories } from "./categoryService.js";
+import { createBusinessRow, deleteBusinessRow, settingsOf } from "./businessService.js";
 import {
-    INDUSTRIES, INDUSTRY_NAMES, LABEL_GROUPS, LABEL_KEYS, LABEL_HINTS, buildProfile, setActiveProfile, getIndustryKey,
+    INDUSTRIES, INDUSTRY_NAMES, LABEL_GROUPS, LABEL_KEYS, LABEL_HINTS, buildProfile, setProfiles, getIndustryKey,
 } from "../config/industries.js";
 
 const slug = (s) => String(s).toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -20,23 +21,42 @@ async function overridesFor(key) {
     return Object.fromEntries(rows.map((r) => [r.LabelKey, r.Value]));
 }
 
-/** Read the active industry + its wording from the DB and make it the live profile. */
-export async function refreshProfile() {
+/** The DEFAULT business: the one used when a request names no business (old links, the monitor ...). */
+export async function getDefaultKey() {
     const row = (await query(`SELECT ActiveIndustry FROM mehndi.AppSettings WHERE Id = 1`))[0];
-    let key = row?.ActiveIndustry || getIndustryKey();
-    let info = await resolveIndustry(key);
-    if (!info) { key = getIndustryKey(); info = await resolveIndustry(key); }
-
-    const overrides = await overridesFor(key);
-    // brand name / tagline from .env only fill in when the SuperAdmin hasn't set them
-    const env = {};
-    if (!overrides.name && (process.env.BRAND_NAME || "").trim()) env.name = process.env.BRAND_NAME.trim();
-    if (!overrides.tagline && (process.env.BRAND_TAGLINE || "").trim()) env.tagline = process.env.BRAND_TAGLINE.trim();
-    const profile = buildProfile(key, info.base, { ...env, ...overrides });
-    setActiveProfile(profile);
-    invalidateCategories();          // categories are per industry
-    return profile;
+    const key = row?.ActiveIndustry || getIndustryKey();
+    return (await resolveIndustry(key)) ? key : getIndustryKey();
 }
+
+/** Build the profile (template + SuperAdmin wording) of EVERY business and make them live. */
+export async function refreshProfiles() {
+    const defaultKey = await getDefaultKey();
+    const customs = await query(`SELECT * FROM mehndi.Industries`);
+    const labelRows = await query(`SELECT IndustryKey, LabelKey, Value FROM mehndi.IndustryLabels`);
+    const overrides = new Map();
+    for (const r of labelRows) {
+        if (!overrides.has(r.IndustryKey)) overrides.set(r.IndustryKey, {});
+        overrides.get(r.IndustryKey)[r.LabelKey] = r.Value;
+    }
+
+    const map = new Map();
+    const add = (key, base) => {
+        const own = overrides.get(key) || {};
+        const env = {};
+        if (key === defaultKey) {          // .env brand overrides only apply to the default business
+            if (!own.name && (process.env.BRAND_NAME || "").trim()) env.name = process.env.BRAND_NAME.trim();
+            if (!own.tagline && (process.env.BRAND_TAGLINE || "").trim()) env.tagline = process.env.BRAND_TAGLINE.trim();
+        }
+        map.set(key, buildProfile(key, base, { ...env, ...own }));
+    };
+    for (const [key, base] of Object.entries(INDUSTRIES)) add(key, base);
+    for (const r of customs) add(r.IndustryKey, INDUSTRIES[r.BaseKey] || INDUSTRIES.mehndi);
+
+    setProfiles(map, defaultKey);
+    invalidateCategories();            // categories are per business
+    return map.get(defaultKey);
+}
+export const refreshProfile = refreshProfiles;   // older name, same thing
 
 export async function listIndustries() {
     const custom = await query(`SELECT * FROM mehndi.Industries ORDER BY CreatedAt`);
@@ -44,8 +64,8 @@ export async function listIndustries() {
     return {
         active: row?.ActiveIndustry || getIndustryKey(),
         industries: [
-            ...Object.keys(INDUSTRIES).map((k) => ({ key: k, name: INDUSTRY_NAMES[k], builtIn: true })),
-            ...custom.map((r) => ({ key: r.IndustryKey, name: r.Name, builtIn: false, baseKey: r.BaseKey })),
+            ...Object.keys(INDUSTRIES).map((k) => ({ key: k, name: INDUSTRY_NAMES[k], builtIn: true, ...settingsOf(k) })),
+            ...custom.map((r) => ({ key: r.IndustryKey, name: r.Name, builtIn: false, baseKey: r.BaseKey, ...settingsOf(r.IndustryKey) })),
         ],
     };
 }
@@ -68,7 +88,9 @@ export async function createIndustry({ name, baseKey, createdBy }) {
     // new industries start with the template's wording but their own shop name
     await query(
         `INSERT INTO mehndi.IndustryLabels (IndustryKey, LabelKey, Value) VALUES (@k, 'name', @n)`, { k: key, n: clean });
-    return { key, name: clean, baseKey, builtIn: false };
+    const slug = await createBusinessRow(key, clean);      // its own address (not published until you say so)
+    await refreshProfiles();
+    return { key, name: clean, baseKey, builtIn: false, slug };
 }
 
 export async function deleteIndustry(key) {
@@ -79,6 +101,8 @@ export async function deleteIndustry(key) {
     if (active === key) throw fail("This industry is in use. Switch to another one first.");
     await query(`DELETE FROM mehndi.IndustryLabels WHERE IndustryKey = @k`, { k: key });
     await query(`DELETE FROM mehndi.Industries WHERE IndustryKey = @k`, { k: key });
+    await deleteBusinessRow(key);
+    await refreshProfiles();
     return { ok: true };
 }
 

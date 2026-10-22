@@ -7,6 +7,7 @@ import {
     createDesign, deleteDesign, createCustomImage,
 } from "../services/designService.js";
 import { getProfile } from "../config/industries.js";
+import { currentIndustry } from "../middleware/industry.js";
 import { canAccessIndustry } from "../services/adminAccess.js";
 import { getCategoryAny } from "../services/categoryService.js";
 
@@ -127,7 +128,7 @@ router.post("/", ...adminOnly, uploadImage, async (req, res) => {
             body: `${design.name} - ${design.categoryName}`,
             designId: design.id,
             at: new Date().toISOString(),
-        });
+        }, currentIndustry().slug);
         res.status(201).json(design);
     } catch (err) {
         console.error("POST /designs failed:", err);

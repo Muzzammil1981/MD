@@ -3,6 +3,7 @@ import { adminOnly } from "../middleware/auth.js";
 import { listIndustries } from "../services/industryService.js";
 import { listCategories } from "../services/categoryService.js";
 import { getAdminIndustries } from "../services/adminAccess.js";
+import { slugOf } from "../services/businessService.js";
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ router.get("/", ...adminOnly, async (req, res) => {
             allowed = industries.filter((i) => mine.includes(i.key));
         }
         const out = [];
-        for (const i of allowed) out.push({ key: i.key, name: i.name, isLive: i.key === active, categories: await listCategories(i.key) });
+        for (const i of allowed) out.push({ key: i.key, name: i.name, slug: slugOf(i.key), isLive: i.key === active, categories: await listCategories(i.key) });
         res.json({ liveIndustry: active, industries: out });
     } catch (err) {
         res.status(500).json({ message: err.message });

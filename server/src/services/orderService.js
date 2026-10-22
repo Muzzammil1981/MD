@@ -181,7 +181,8 @@ export async function listOrders({ userId, role }) {
         // only the industries this admin was assigned (and, for events, events they created)
         return fetchOrders({ where: `WHERE ${adminOrderScope("o")}`, params: { me: userId } });
     }
-    return fetchOrders({ where: "WHERE o.UserId = @u", params: { u: userId } });
+    // a customer sees their orders of THIS business (one account works in every business)
+    return fetchOrders({ where: "WHERE o.UserId = @u AND o.IndustryKey = @ind", params: { u: userId, ind: getProfile().industry } });
 }
 
 /** May this signed-in admin act on this order? (SuperAdmin: yes. Admin: only if it is on their event) */
@@ -226,7 +227,7 @@ async function resolveItems(rawItems, eventId, db) {
     const params = {};
     ids.forEach((id, n) => { params[`d${n}`] = id; });
     const designs = await query(
-        `SELECT d.Id, d.Name, d.Price, d.AmountType, d.ImagePath, d.DurationMinutes, c.Name AS CategoryName
+        `SELECT d.Id, d.Name, d.Price, d.AmountType, d.ImagePath, d.DurationMinutes, c.IndustryKey, c.Name AS CategoryName
          FROM mehndi.Designs d JOIN mehndi.Categories c ON c.Id = d.CategoryId
          WHERE d.Id IN (${ids.map((_, n) => `@d${n}`).join(",")})`,
         params, db
@@ -242,7 +243,9 @@ async function resolveItems(rawItems, eventId, db) {
 
     return rawItems.map((raw) => {
         const d = byId.get(String(raw.id));
-        if (!d) throw new Error(`"${raw.name || raw.id}" is no longer available`);
+        if (!d || (d.IndustryKey && d.IndustryKey !== getProfile().industry)) {
+            throw new Error(`"${raw.name || raw.id}" is no longer available`);   // also stops a business ordering another's items
+        }
         const qty = Math.floor(Number(raw.qty));
         if (!Number.isFinite(qty) || qty < 1 || qty > 100) throw new Error(`Invalid quantity for "${d.Name}"`);
         return {

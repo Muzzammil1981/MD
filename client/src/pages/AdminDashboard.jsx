@@ -10,7 +10,7 @@ import AdminsManager from "../components/AdminsManager";
 import ReviewsManager from "../components/ReviewsManager";
 import ScheduleCard from "../components/ScheduleCard";
 import BusinessManager from "../components/BusinessManager";
-import { api, API_BASE } from "../lib/api";
+import { api, API_BASE, setIndustrySlug } from "../lib/api";
 import { playNotificationSound, primeAudioOnFirstGesture } from "../lib/notify";
 import AdminSettingsCard from "./AdminSettingsCard";
 import ReportsPanel from "./ReportsPanel";
@@ -21,6 +21,9 @@ import SafeImage from "../components/SafeImage";
 import AdvertisementsManager from "../components/AdvertisementsManager";
 import { B } from "../lib/brand";
 
+
+/* public address of an event's business, e.g. https://site/barber  (events open as /<business>?event=ID) */
+const eventBase = (e) => `${window.location.origin}${e?.businessSlug ? `/${e.businessSlug}` : ""}`;
 
 export default function AdminDashboard({ user, onLogout }) {
     const [toast, setToast] = useState(null);
@@ -35,6 +38,8 @@ export default function AdminDashboard({ user, onLogout }) {
         }).catch(() => { });
     }, []);
     const workIndustry = ctx.industries.find((i) => i.key === workKey);
+    // every request from this dashboard is for the business selected in "Working in" (set during render so child effects see it)
+    if (workIndustry) setIndustrySlug(workIndustry.slug);
     const [designsKey, setDesignsKey] = useState(0);
     const [lightbox, setLightbox] = useState(null);
     const [orders, setOrders] = useState([]);
@@ -184,7 +189,7 @@ export default function AdminDashboard({ user, onLogout }) {
                         </div>
 
                         <div className="mt-4 sm:mt-6"><AdminSettingsCard role={user.role} /></div>
-                        {user.role === "SUPERADMIN" && <div className="mt-4 sm:mt-6"><ScheduleCard /></div>}
+                        {user.role === "SUPERADMIN" && <div className="mt-4 sm:mt-6"><ScheduleCard key={workKey} industryName={workIndustry?.name} /></div>}
 
                         <section className="mt-10 sm:mt-12">
                             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -528,9 +533,9 @@ function EventsManager() {
                         </div>
                         <p className="text-xs text-[#8a6d53] mb-4">Scan this QR code at your store to order from <strong>{qrEvent.name}</strong></p>
                         <div className="bg-white p-4 rounded-2xl border border-[#eadfce] inline-block">
-                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${window.location.origin}/?event=${qrEvent.id}`)}`} alt="Event QR Code" className="w-48 h-48 mx-auto" />
+                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${eventBase(qrEvent)}?event=${qrEvent.id}`)}`} alt="Event QR Code" className="w-48 h-48 mx-auto" />
                         </div>
-                        <p className="text-[10px] text-[#8a6d53] mt-4 break-all bg-[#faf5ed] p-2 rounded-lg">{window.location.origin}/?event={qrEvent.id}</p>
+                        <p className="text-[10px] text-[#8a6d53] mt-4 break-all bg-[#faf5ed] p-2 rounded-lg">{eventBase(qrEvent)}?event={qrEvent.id}</p>
                     </div>
                 </div>
             )}
@@ -557,14 +562,14 @@ function EventsManager() {
 
                         <div className="rounded-2xl bg-[#faf5ed] border border-[#eadfce] p-4 mb-4">
                             <code className="text-xs break-all text-[#7d3f24] font-mono">
-                                {window.location.origin}/monitor?event={monitorEvent.id}
+                                {eventBase(monitorEvent)}/monitor?event={monitorEvent.id}
                             </code>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => {
-                                    navigator.clipboard.writeText(`${window.location.origin}/monitor?event=${monitorEvent.id}`);
+                                    navigator.clipboard.writeText(`${eventBase(monitorEvent)}/monitor?event=${monitorEvent.id}`);
                                     alert("Monitor link copied!");
                                 }}
                                 className="rounded-full bg-[#f4eadc] text-[#7d3f24] py-3 text-sm font-semibold hover:bg-[#eaddc8] transition"
@@ -572,7 +577,7 @@ function EventsManager() {
                                 Copy Link
                             </button>
                             <a
-                                href={`/monitor?event=${monitorEvent.id}`}
+                                href={`${monitorEvent.businessSlug ? `/${monitorEvent.businessSlug}` : ""}/monitor?event=${monitorEvent.id}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="rounded-full bg-[#1d7a3e] text-white py-3 text-sm font-semibold hover:bg-[#155c2d] transition text-center"

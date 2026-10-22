@@ -1,6 +1,7 @@
 import express from "express";
 import { getProfile } from "../config/industries.js";
 import { listCategories } from "../services/categoryService.js";
+import { slugOf } from "../services/businessService.js";
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.get("/", async (_req, res) => {
     try {
         const { categories: _seed, ...profile } = getProfile();   // the DB is the source of truth for categories
         res.set("Cache-Control", "no-store");
-        res.json({ ...profile, categories: await listCategories() });
+        res.json({ ...profile, slug: slugOf(profile.industry), categories: await listCategories() });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

@@ -28,7 +28,10 @@ import scheduleRoutes from "./routes/schedule.js";
 import configRoutes from "./routes/config.js";
 import businessRoutes from "./routes/business.js";
 import adminContextRoutes from "./routes/adminContext.js";
-import { refreshProfile } from "./services/industryService.js";
+import { refreshProfiles, getDefaultKey } from "./services/industryService.js";
+import { ensureIndustryRows } from "./services/businessService.js";
+import { industryMiddleware } from "./middleware/industry.js";
+import businessesRoutes from "./routes/businesses.js";
 
 for (const key of ["JWT_SECRET", "CLIENT_URL", "DB_USER", "DB_PASSWORD"]) {
     if (!process.env[key]) {
@@ -70,6 +73,10 @@ app.get("/api/categories", async (_req, res) => {
     catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+/* which business is each request for?  (X-Industry header → AsyncLocalStorage) */
+app.use("/api", industryMiddleware);
+
+app.use("/api/businesses", businessesRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admins", adminsRoutes);
 app.use("/api/users", usersRoutes);
@@ -97,7 +104,8 @@ initSocket(server);
 async function start() {
     try {
         await initDatabase(); // creates DB + tables on first run, seeds the SuperAdmin
-        await refreshProfile(); // the industry/wording chosen by the SuperAdmin
+        await ensureIndustryRows(await getDefaultKey());   // every business has an address + its own opening hours
+        await refreshProfiles();                           // wording of every business
     } catch (err) {
         console.error("❌ Could not set up SQL Server:", err.message);
         console.error("   Check DB_SERVER / DB_USER / DB_PASSWORD in .env and that SQL Server accepts TCP/IP + SQL logins.");

@@ -5,7 +5,7 @@ import { api } from "../lib/api";
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /* SuperAdmin: opening hours, booking grid, number of stations (chairs / stylists / bays), closed days */
-export default function ScheduleCard() {
+export default function ScheduleCard({ industryName }) {
     const [s, setS] = useState(null);
     const [busy, setBusy] = useState(false);
     const [msg, setMsg] = useState({ type: "", text: "" });
@@ -31,7 +31,7 @@ export default function ScheduleCard() {
         <form onSubmit={save} className="rounded-2xl border border-[#eadfce] bg-white p-5 shadow-sm sm:rounded-3xl sm:p-6">
             <div className="flex items-center gap-2">
                 <Clock size={18} className="text-[#7d3f24]" />
-                <h3 className="serif text-xl font-semibold">Booking schedule</h3>
+                <h3 className="serif text-xl font-semibold">Booking schedule{industryName ? ` · ${industryName}` : ""}</h3>
             </div>
             <p className="mt-1 text-xs text-[#715e4e]">
                 Controls the time slots customers can book (normal bookings; event tokens are not affected).

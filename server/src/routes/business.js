@@ -5,6 +5,7 @@ import {
     getEditable, saveLabels, resetLabels, starterCategoriesFor, industryExists,
 } from "../services/industryService.js";
 import { getProfile } from "../config/industries.js";
+import { updateAddress, qrFor, slugOf } from "../services/businessService.js";
 import {
     listCategoriesAdmin, createCategory, updateCategory, deleteCategory, reorderCategories, addStarterCategories,
 } from "../services/categoryService.js";
@@ -23,6 +24,15 @@ router.get("/industries", run(() => listIndustries()));
 router.put("/active", run((req) => setActiveIndustry(req.body?.key)));
 router.post("/industries", run((req) => createIndustry({ ...req.body, createdBy: req.user.id })));
 router.delete("/industries/:key", run((req) => deleteIndustry(req.params.key)));
+
+/* ----- public address of a business: /slug, published or hidden ----- */
+router.put("/industries/:key/address", run((req) => updateAddress(req.params.key, req.body || {})));
+router.get("/industries/:key/qr", run(async (req) => {
+    const slug = slugOf(req.params.key);
+    if (!slug) throw Object.assign(new Error("Business not found"), { status: 404 });
+    const url = `${(process.env.CLIENT_URL || "").replace(/\/$/, "")}/${slug}`;
+    return { url, qr: await qrFor(url) };
+}));
 
 /* ----- wording of one industry ----- */
 router.get("/industries/:key/labels", run((req) => getEditable(req.params.key)));

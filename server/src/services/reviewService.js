@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { query, withTransaction, iso } from "../db/pool.js";
 import { adminCanAccessOrder } from "./orderService.js";
 import { adminOrderScope } from "./adminAccess.js";
+import { getProfile } from "../config/industries.js";
 
 /* Reviews are written by customers about a COMPLETED order (one review per order).
    The review is shown on the home page and on every design that was in that order. */
@@ -34,19 +35,21 @@ export async function listPublic({ designId, page = 1, limit = 6 }) {
     const lim = Math.min(Math.max(parseInt(limit, 10) || 6, 1), 50);
     const skip = (Math.max(parseInt(page, 10) || 1, 1) - 1) * lim;
 
+    // only reviews of orders placed in THIS business
     const filter = designId
-        ? `r.Hidden = 0 AND EXISTS (SELECT 1 FROM mehndi.ReviewDesigns rd WHERE rd.ReviewId = r.Id AND rd.DesignId = @d)`
-        : `r.Hidden = 0`;
-    const params = designId ? { d: designId } : {};
+        ? `r.Hidden = 0 AND o.IndustryKey = @ind AND EXISTS (SELECT 1 FROM mehndi.ReviewDesigns rd WHERE rd.ReviewId = r.Id AND rd.DesignId = @d)`
+        : `r.Hidden = 0 AND o.IndustryKey = @ind`;
+    const params = designId ? { d: designId, ind: getProfile().industry } : { ind: getProfile().industry };
 
     const stats = await query(
-        `SELECT COUNT(*) AS N, AVG(CAST(r.Rating AS FLOAT)) AS Average FROM mehndi.Reviews r WHERE ${filter}`, params);
+        `SELECT COUNT(*) AS N, AVG(CAST(r.Rating AS FLOAT)) AS Average
+         FROM mehndi.Reviews r JOIN mehndi.Orders o ON o.Id = r.OrderId WHERE ${filter}`, params);
 
     // ROW_NUMBER paging works on every SQL Server version (incl. 2008 R2)
     const rows = await query(
         `SELECT * FROM (
              SELECT r.*, ROW_NUMBER() OVER (ORDER BY r.CreatedAt DESC) AS rn
-             FROM mehndi.Reviews r WHERE ${filter}
+             FROM mehndi.Reviews r JOIN mehndi.Orders o ON o.Id = r.OrderId WHERE ${filter}
          ) x WHERE x.rn > @skip AND x.rn <= @upto ORDER BY x.rn`,
         { ...params, skip, upto: skip + lim });
 

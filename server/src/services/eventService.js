@@ -1,6 +1,7 @@
 import { query, withTransaction, iso } from "../db/pool.js";
 import { ROLES } from "../middleware/auth.js";
 import { getProfile, cap } from "../config/industries.js";
+import { slugOf } from "./businessService.js";
 
 /* Every event row comes with its owner (the admin who created it) */
 const EVENT_SELECT = `
@@ -42,6 +43,7 @@ async function hydrate(eventRows) {
         tokenCounter: r.TokenCounter,
         ownerId: r.OwnerId || null,
         industryKey: r.IndustryKey || null,
+        businessSlug: slugOf(r.IndustryKey),
         ownerName: r.OwnerName || null,
         createdAt: iso(r.CreatedAt),
         ...(r.UpdatedAt ? { updatedAt: iso(r.UpdatedAt) } : {}),
